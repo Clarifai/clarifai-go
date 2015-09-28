@@ -1,5 +1,7 @@
 package clarifai
 
+import "net/url"
+
 type Client interface {
 	clientID() string
 	clientSecret() string
@@ -8,21 +10,27 @@ type Client interface {
 	apiPort() string
 }
 
+const ROOT = "api.clarifai.com"
+const TAG_PATH = "/v1/token"
+const FEEDBACK_PATH = "/v1/feedback"
+
 type ClarifaiClient struct {
 	clientID     string
 	clientSecret string
 	accessToken  string
-	apiHost      string
-	apiPort      string
-	tokenRetries integer
 }
 
 // Initialize a new client object
 func initClient(clientID, clientSecret, accessToken string) *ClarifaiClient {
-	return &ClarifaiClient{clientID, clientSecret, accessToken, "api.clarifai.com", "443"}
+	return &ClarifaiClient{clientID, clientSecret, "unasigned"}
 }
 
-// clienID getter
+// Universal http request function used for all the endpoints
+func (self *ClarifaiClient) get(values url.Values, uri string) ([]byte, error) {
+
+}
+
+// clientID getter
 func (self *ClarifaiClient) getClientID() string {
 	return self.clientID
 }
