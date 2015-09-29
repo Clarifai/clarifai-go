@@ -1,6 +1,7 @@
 package clarifai
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -11,11 +12,11 @@ import (
 type Client interface {
 	getClientID() string
 	getClientSecret() string
-	getAccessToken() string
+	requestAccessToken() string
 }
 
-const VERSION = "V1"
-const ROOT_URL = "api.clarifai.com"
+const VERSION = "v1"
+const ROOT_URL = "https://api.clarifai.com"
 
 const TOKEN_MAX_RETRIES = 2
 
@@ -28,12 +29,19 @@ type ClarifaiClient struct {
 	tokenMaxRetries int
 }
 
+type TokenResp struct {
+	access_token string `json:"access_token"`
+	expires_in   int    `json:"expires_in"`
+	scope        string `json:"scope"`
+	token_type   string `json:"token_type"`
+}
+
 // Initialize a new client object
 func NewClient(clientID, clientSecret string) *ClarifaiClient {
 	return &ClarifaiClient{clientID, clientSecret, "unasigned", false, 0, TOKEN_MAX_RETRIES}
 }
 
-func (client *ClarifaiClient) requestAccessToken() ([]byte, error) {
+func (client *ClarifaiClient) requestAccessToken() (*TokenResp, error) {
 	form := url.Values{}
 	form.Set("grant_type", "client_credentials")
 	form.Set("client_id", client.clientID)
@@ -59,13 +67,15 @@ func (client *ClarifaiClient) requestAccessToken() ([]byte, error) {
 
 	defer res.Body.Close()
 
-	body, err := ioutil.ReadAll(req.Body)
+	body, err := ioutil.ReadAll(res.Body)
 
 	if err != nil {
-		return body, err
+		return nil, err
 	}
 
-	return body, err
+	token := new(TokenResp)
+	err = json.Unmarshal(body, token)
+	return token, err
 }
 
 // clientID getter
