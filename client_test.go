@@ -2,21 +2,31 @@ package clarifai
 
 import (
 	"testing"
+
+	"github.com/cheekybits/is"
 )
 
-func TestClient(t *testing.T) {
-	wantID := "testID"
-	wantSecret := "testSecret"
+var tests = []struct {
+	input_ID        string
+	expected_ID     string
+	input_Secret    string
+	expected_Secret string
+}{
+	{"testID", "testID", "testSecret", "testSecret"},
+}
 
-	testClient := InitClient(wantID, wantSecret)
+func TestClientInit(t *testing.T) {
+	is := is.New(t)
+	client := InitClient("testing", "testing")
+	is.OK(client)
+}
 
-	gotID := testClient.getClientID()
-	gotSecret := testClient.getClientSecret()
+func TestClientGetters(t *testing.T) {
+	is := is.New(t)
 
-	if gotID != wantID {
-		t.Errorf("InitClient(\"%q\") --> client.getClientID() == %q", wantID, gotID)
-	}
-	if gotSecret != wantSecret {
-		t.Errorf("InitClient(\"%q\") --> client.getClientSecret() == %q", wantSecret, gotSecret)
+	for _, test := range tests {
+		client := InitClient(test.input_ID, test.input_Secret)
+		is.Equal(client.getClientID(), test.expected_ID)
+		is.Equal(client.getClientSecret(), test.expected_Secret)
 	}
 }
