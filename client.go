@@ -25,13 +25,13 @@ type ClarifaiClient struct {
 }
 
 // Initialize a new client object
-func InitClient(clientID, clientSecret string) *ClarifaiClient {
+func NewClient(clientID, clientSecret string) *ClarifaiClient {
 	return &ClarifaiClient{clientID, clientSecret, "unasigned"}
 }
 
 func (self *ClarifaiClient) post(values url.Values, endpoint string) ([]byte, error) {
 	parts := []string{ROOT_URL, VERSION, endpoint}
-	url := strings.Join(parts, "/")
+	url := strings.Join(parts, "/") + "/"
 	req, err := http.NewRequest("POST", url, string.NewReader(values.encode()))
 
 	if err != nil {

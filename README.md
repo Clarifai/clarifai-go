@@ -9,6 +9,6 @@ package main
 import clarifai "github.com/samuelcouch/clarifai-go"
 
 func main() {
-	client := clarifai.InitClient("<client_id>", "<client_secret>")
+	client := clarifai.NewClient("<client_id>", "<client_secret>")
 }
 ```
