@@ -1,7 +1,5 @@
 package clarifai
 
-import "net/url"
-
 type Client interface {
 	clientID() string
 	clientSecret() string
@@ -23,11 +21,6 @@ type ClarifaiClient struct {
 // Initialize a new client object
 func InitClient(clientID, clientSecret, accessToken string) *ClarifaiClient {
 	return &ClarifaiClient{clientID, clientSecret, "unasigned"}
-}
-
-// Universal http request function used for all the endpoints
-func (self *ClarifaiClient) get(values url.Values, uri string) ([]byte, error) {
-
 }
 
 // clientID getter
