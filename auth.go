@@ -2,6 +2,7 @@ package clarifai
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -42,6 +43,10 @@ func (client *ClarifaiClient) requestAccessToken() (*TokenResp, error) {
 	}
 
 	defer res.Body.Close()
+
+	if res.StatusCode != 200 {
+		return nil, errors.New("TOKEN_APP_INVALID")
+	}
 
 	body, err := ioutil.ReadAll(res.Body)
 

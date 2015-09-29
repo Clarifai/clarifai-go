@@ -9,19 +9,19 @@ package main
 import clarifai "github.com/samuelcouch/clarifai"
 
 func main() {
-	// Create a new clarifai client
+  // Create a new clarifai client
   client := clarifai.NewClient("<client_id>", "<client_secret>")
 
   // Request a new token
   token, err := client.requestAccessToken()
   if err != nil {
-    fmt.Println("whoops")
+    fmt.Println(err)
+  } else {
+    // Print the full response from the token request
+    // &{AccessToken:<token> ExpiresIn:<time> Scope:<scope of token> TokenType:Bearer}
+    fmt.Printf("%+v\n", token)
+    // Show that the token is now saved to the client
+    fmt.Printf("%v\n", client.accessToken)
   }
-
-  // Print the full response from the token request
-  // &{AccessToken:<token> ExpiresIn:<time> Scope:<scope of token> TokenType:Bearer}
-  fmt.Printf("%+v\n", token)
-  // Show that the token is now saved to the client
-  fmt.Printf("%v\n", client.accessToken)
 }
 ```
