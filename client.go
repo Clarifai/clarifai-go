@@ -10,17 +10,21 @@ import (
 	"strings"
 )
 
+// Client is the interface to publicly exported functions
 type Client interface {
 	getClientID() string
 	getClientSecret() string
 	requestAccessToken() string
 }
 
-const VERSION = "v1"
-const ROOT_URL = "https://api.clarifai.com"
+// Configurations
+const (
+	Version         = "v1"
+	RootURL         = "https://api.clarifai.com"
+	TokenMaxRetries = 2
+)
 
-const TOKEN_MAX_RETRIES = 2
-
+// ClarifaiClient contains scoped variables forindividual clients
 type ClarifaiClient struct {
 	clientID        string
 	clientSecret    string
@@ -30,16 +34,17 @@ type ClarifaiClient struct {
 	tokenMaxRetries int
 }
 
+// TokenResp is the expected response from /token/
 type TokenResp struct {
-	Access_token string `json:"access_token"`
-	Expires_in   int    `json:"expires_in"`
-	Scope        string `json:"scope"`
-	Token_type   string `json:"token_type"`
+	AccessToken string `json:"access_token"`
+	ExpiresIn   int    `json:"expires_in"`
+	Scope       string `json:"scope"`
+	TokenType   string `json:"token_type"`
 }
 
-// Initialize a new client object
+// NewClient initializes a new Clarifai client
 func NewClient(clientID, clientSecret string) *ClarifaiClient {
-	return &ClarifaiClient{clientID, clientSecret, "unasigned", false, 0, TOKEN_MAX_RETRIES}
+	return &ClarifaiClient{clientID, clientSecret, "unasigned", false, 0, TokenMaxRetries}
 }
 
 func (client *ClarifaiClient) requestAccessToken() (*TokenResp, error) {
@@ -107,6 +112,6 @@ func (client *ClarifaiClient) switchThrottle() {
 
 // Helper function to build URLs
 func buildURL(endpoint string) string {
-	parts := []string{ROOT_URL, VERSION, endpoint}
+	parts := []string{RootURL, Version, endpoint}
 	return strings.Join(parts, "/") + "/"
 }
