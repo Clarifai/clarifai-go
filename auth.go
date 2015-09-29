@@ -51,9 +51,9 @@ func (client *ClarifaiClient) requestAccessToken() (*TokenResp, error) {
 
 	token := new(TokenResp)
 	err = json.Unmarshal(body, token)
-  if err != nil {
-    return token, err
-  }
-  client.accessToken = token.AccessToken
+	if err != nil {
+		return token, err
+	}
+	client.accessToken = token.AccessToken
 	return token, err
 }
