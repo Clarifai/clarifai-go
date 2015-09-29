@@ -18,8 +18,9 @@ func main() {
     fmt.Println("whoops")
   }
 
-  // Print the token from the request
-  fmt.Printf("%v\n", token.AccessToken)
+  // Print the full response from the token request
+  // &{AccessToken:<token> ExpiresIn:<time> Scope:<scope of token> TokenType:Bearer}
+  fmt.Printf("%+v\n", token)
   // Show that the token is now saved to the client
   fmt.Printf("%v\n", client.accessToken)
 }
