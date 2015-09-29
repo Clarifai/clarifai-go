@@ -2,13 +2,6 @@ package clarifai
 
 import "strings"
 
-// Client is the interface to publicly exported functions
-type Client interface {
-	getClientID() string
-	getClientSecret() string
-	requestAccessToken() string
-}
-
 // Configurations
 const (
 	Version         = "v1"
@@ -18,42 +11,21 @@ const (
 
 // ClarifaiClient contains scoped variables forindividual clients
 type ClarifaiClient struct {
-	clientID        string
-	clientSecret    string
-	accessToken     string
-	throttled       bool
-	tokenRetries    int
-	tokenMaxRetries int
+	ClientID     string
+	ClientSecret string
+	AccessToken  string
+	Throttled    bool
+	TokenRetries int
 }
 
 // NewClient initializes a new Clarifai client
 func NewClient(clientID, clientSecret string) *ClarifaiClient {
-	return &ClarifaiClient{clientID, clientSecret, "unasigned", false, 0, TokenMaxRetries}
-}
-
-// clientID getter
-func (client *ClarifaiClient) getClientID() string {
-	return client.clientID
-}
-
-// clientSecret getter
-func (client *ClarifaiClient) getClientSecret() string {
-	return client.clientSecret
-}
-
-// accessToken getter
-func (client *ClarifaiClient) getAccessToken() string {
-	return client.accessToken
-}
-
-// Determine if the client is currently being throttled by the host
-func (client *ClarifaiClient) isThrottled() bool {
-	return client.throttled
+	return &ClarifaiClient{clientID, clientSecret, "", false, 0}
 }
 
 // Convenience setter to switch the throttled flag
 func (client *ClarifaiClient) switchThrottle() {
-	client.throttled = !client.throttled
+	client.Throttled = !client.Throttled
 }
 
 // Helper function to build URLs

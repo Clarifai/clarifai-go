@@ -21,8 +21,8 @@ type TokenResp struct {
 func (client *ClarifaiClient) requestAccessToken() (*TokenResp, error) {
 	form := url.Values{}
 	form.Set("grant_type", "client_credentials")
-	form.Set("client_id", client.clientID)
-	form.Set("client_secret", client.clientSecret)
+	form.Set("client_id", client.ClientID)
+	form.Set("client_secret", client.ClientSecret)
 	formData := strings.NewReader(form.Encode())
 
 	req, err := http.NewRequest("POST", buildURL("token"), formData)
@@ -31,7 +31,7 @@ func (client *ClarifaiClient) requestAccessToken() (*TokenResp, error) {
 		return nil, err
 	}
 
-	req.Header.Set("Authorization", "Bearer "+client.accessToken)
+	req.Header.Set("Authorization", "Bearer "+client.AccessToken)
 	req.Header.Set("Content-Length", strconv.Itoa(len(form.Encode())))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
@@ -59,6 +59,6 @@ func (client *ClarifaiClient) requestAccessToken() (*TokenResp, error) {
 	if err != nil {
 		return token, err
 	}
-	client.accessToken = token.AccessToken
+	client.AccessToken = token.AccessToken
 	return token, err
 }
