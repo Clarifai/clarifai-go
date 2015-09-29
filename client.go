@@ -19,7 +19,7 @@ type ClarifaiClient struct {
 }
 
 // Initialize a new client object
-func InitClient(clientID, clientSecret, accessToken string) *ClarifaiClient {
+func InitClient(clientID, clientSecret string) *ClarifaiClient {
 	return &ClarifaiClient{clientID, clientSecret, "unasigned"}
 }
 
