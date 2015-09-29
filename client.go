@@ -31,7 +31,7 @@ type ClarifaiClient struct {
 
 type TokenResp struct {
 	access_token string `json:"access_token"`
-	expires_in   int    `json:"expires_in"`
+	expires_in   string `json:"expires_in"`
 	scope        string `json:"scope"`
 	token_type   string `json:"token_type"`
 }
