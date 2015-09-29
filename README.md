@@ -6,7 +6,7 @@ Unofficial library written for the [Clarifai](http://www.clarifai.com) API. It's
 ```go
 package main
 
-import clarifai "github.com/samuelcouch/clarifai-go"
+import clarifai "github.com/samuelcouch/clarifai"
 
 func main() {
 	// Create a new clarifai client
