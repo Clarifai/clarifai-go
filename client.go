@@ -2,6 +2,7 @@ package clarifai
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -30,10 +31,10 @@ type ClarifaiClient struct {
 }
 
 type TokenResp struct {
-	access_token string `json:"access_token"`
-	expires_in   string `json:"expires_in"`
-	scope        string `json:"scope"`
-	token_type   string `json:"token_type"`
+	Access_token string `json:"access_token"`
+	Expires_in   int    `json:"expires_in"`
+	Scope        string `json:"scope"`
+	Token_type   string `json:"token_type"`
 }
 
 // Initialize a new client object
@@ -48,7 +49,7 @@ func (client *ClarifaiClient) requestAccessToken() (*TokenResp, error) {
 	form.Set("client_secret", client.clientSecret)
 	formData := strings.NewReader(form.Encode())
 
-	req, err := http.NewRequest("POST", buildUrl("token"), formData)
+	req, err := http.NewRequest("POST", buildURL("token"), formData)
 
 	if err != nil {
 		return nil, err
@@ -75,6 +76,7 @@ func (client *ClarifaiClient) requestAccessToken() (*TokenResp, error) {
 
 	token := new(TokenResp)
 	err = json.Unmarshal(body, token)
+	fmt.Println(err)
 	return token, err
 }
 
@@ -104,7 +106,7 @@ func (client *ClarifaiClient) switchThrottle() {
 }
 
 // Helper function to build URLs
-func buildUrl(endpoint string) string {
+func buildURL(endpoint string) string {
 	parts := []string{ROOT_URL, VERSION, endpoint}
 	return strings.Join(parts, "/") + "/"
 }
