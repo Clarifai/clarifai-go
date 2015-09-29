@@ -9,8 +9,8 @@ const (
 	TokenMaxRetries = 2
 )
 
-// ClarifaiClient contains scoped variables forindividual clients
-type ClarifaiClient struct {
+// Client contains scoped variables forindividual clients
+type Client struct {
 	ClientID     string
 	ClientSecret string
 	AccessToken  string
@@ -19,12 +19,12 @@ type ClarifaiClient struct {
 }
 
 // NewClient initializes a new Clarifai client
-func NewClient(clientID, clientSecret string) *ClarifaiClient {
-	return &ClarifaiClient{clientID, clientSecret, "", false, 0}
+func NewClient(clientID, clientSecret string) *Client {
+	return &Client{clientID, clientSecret, "", false, 0}
 }
 
-// Convenience setter to switch the throttled flag
-func (client *ClarifaiClient) switchThrottle() {
+// SwitchThrottle is a convenience setter to switch the throttled flag
+func (client *Client) SwitchThrottle() {
 	client.Throttled = !client.Throttled
 }
 

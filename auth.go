@@ -18,7 +18,7 @@ type TokenResp struct {
 	TokenType   string `json:"token_type"`
 }
 
-func (client *ClarifaiClient) requestAccessToken() (*TokenResp, error) {
+func (client *Client) requestAccessToken() (*TokenResp, error) {
 	form := url.Values{}
 	form.Set("grant_type", "client_credentials")
 	form.Set("client_id", client.ClientID)
