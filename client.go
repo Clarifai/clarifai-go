@@ -4,74 +4,97 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 )
 
 type Client interface {
-	clientID() string
-	clientSecret() string
-	accessToken() string
-	apiHost() string
-	apiPort() string
+	getClientID() string
+	getClientSecret() string
+	getAccessToken() string
 }
 
 const VERSION = "V1"
 const ROOT_URL = "api.clarifai.com"
 
+const TOKEN_MAX_RETRIES = 2
+
 type ClarifaiClient struct {
-	clientID     string
-	clientSecret string
-	accessToken  string
+	clientID        string
+	clientSecret    string
+	accessToken     string
+	throttled       bool
+	tokenRetries    int
+	tokenMaxRetries int
 }
 
 // Initialize a new client object
 func NewClient(clientID, clientSecret string) *ClarifaiClient {
-	return &ClarifaiClient{clientID, clientSecret, "unasigned"}
+	return &ClarifaiClient{clientID, clientSecret, "unasigned", false, 0, TOKEN_MAX_RETRIES}
 }
 
-func (self *ClarifaiClient) post(values url.Values, endpoint string) ([]byte, error) {
-	parts := []string{ROOT_URL, VERSION, endpoint}
-	url := strings.Join(parts, "/") + "/"
-	req, err := http.NewRequest("POST", url, string.NewReader(values.encode()))
+func (client *ClarifaiClient) requestAccessToken() ([]byte, error) {
+	form := url.Values{}
+	form.Set("grant_type", "client_credentials")
+	form.Set("client_id", client.clientID)
+	form.Set("client_secret", client.clientSecret)
+	formData := strings.NewReader(form.Encode())
+
+	req, err := http.NewRequest("POST", buildUrl("token"), formData)
 
 	if err != nil {
 		return nil, err
 	}
 
-	defer res.Body.close()
+	req.Header.Set("Authorization", "Bearer "+client.accessToken)
+	req.Header.Set("Content-Length", strconv.Itoa(len(form.Encode())))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	body, err := ioutil.ReadAll(res.body)
+	httpClient := &http.Client{}
+	res, err := httpClient.Do(req)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(req.Body)
 
 	if err != nil {
 		return body, err
-	}
-
-	if res.StatusCode != 200 && res.StatusCode != 201 {
-		if res.StatusCode == 429 {
-			return body, Error{"Throttled"}
-		} else if res.StatusCode >= 400 && res.StatusCode < 500 {
-			return body, Error{"Bad Request"}
-		} else if res.StatusCode >= 500 && res.StatusCode < 600 {
-			return body, Error{"Clarify Exception"}
-		} else {
-			return body, Error{"Unexpected Status Code"}
-		}
 	}
 
 	return body, err
 }
 
 // clientID getter
-func (self *ClarifaiClient) getClientID() string {
-	return self.clientID
+func (client *ClarifaiClient) getClientID() string {
+	return client.clientID
 }
 
 // clientSecret getter
-func (self *ClarifaiClient) getClientSecret() string {
-	return self.clientSecret
+func (client *ClarifaiClient) getClientSecret() string {
+	return client.clientSecret
 }
 
 // accessToken getter
-func (self *ClarifaiClient) getAccessToken() string {
-	return self.accessToken
+func (client *ClarifaiClient) getAccessToken() string {
+	return client.accessToken
+}
+
+// Determine if the client is currently being throttled by the host
+func (client *ClarifaiClient) isThrottled() bool {
+	return client.throttled
+}
+
+// Convenience setter to switch the throttled flag
+func (client *ClarifaiClient) switchThrottle() {
+	client.throttled = !client.throttled
+}
+
+// Helper function to build URLs
+func buildUrl(endpoint string) string {
+	parts := []string{ROOT_URL, VERSION, endpoint}
+	return strings.Join(parts, "/") + "/"
 }
