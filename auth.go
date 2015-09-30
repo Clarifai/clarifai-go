@@ -19,13 +19,16 @@ type TokenResp struct {
 }
 
 func (client *Client) requestAccessToken() (*TokenResp, error) {
+	if client.TokenRequestAttempts >= MaxTokenRequestAttempts {
+		return nil, errors.New("MAX_TOKEN_REQUEST_ATTEMPTS_REACHED")
+	}
 	form := url.Values{}
 	form.Set("grant_type", "client_credentials")
 	form.Set("client_id", client.ClientID)
 	form.Set("client_secret", client.ClientSecret)
 	formData := strings.NewReader(form.Encode())
 
-	req, err := http.NewRequest("POST", buildURL("token"), formData)
+	req, err := http.NewRequest("POST", client.buildURL("token"), formData)
 
 	if err != nil {
 		return nil, err
@@ -45,6 +48,7 @@ func (client *Client) requestAccessToken() (*TokenResp, error) {
 	defer res.Body.Close()
 
 	if res.StatusCode != 200 {
+		client.TokenRequestAttempts++
 		return nil, errors.New("TOKEN_APP_INVALID")
 	}
 

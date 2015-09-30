@@ -9,8 +9,20 @@ import (
 	"strings"
 )
 
+// InfoResp represents the expected JSON response from /info/
+type InfoResp struct {
+	StatusCode    string `json:"status_code"`
+	StatusMessage string `json:"status_msg"`
+	Results       struct {
+		MinImageSize int `json:"min_image_size"`
+		MaxImageSize int `json:"max_image_size"`
+		MaxBatchSize int `json:max_batch_size`
+		APIVersion   int `json:api_version`
+	}
+}
+
 func (client *Client) commonHTTPRequest(values url.Values, endpoint string) ([]byte, error) {
-	req, err := http.NewRequest("POST", buildURL(endpoint), strings.NewReader(values.Encode()))
+	req, err := http.NewRequest("POST", client.buildURL(endpoint), strings.NewReader(values.Encode()))
 
 	if err != nil {
 		return nil, err
@@ -36,6 +48,7 @@ func (client *Client) commonHTTPRequest(values url.Values, endpoint string) ([]b
 	case 401:
 		return nil, errors.New("TOKEN_INVALID")
 	case 429:
+		client.SetThrottle(true)
 		return nil, errors.New("THROTTLED: " + res.Header.Get("x-throttle-wait-seconds"))
 	case 400:
 		return nil, errors.New("ALL_ERROR")
