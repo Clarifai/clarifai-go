@@ -1,36 +1,183 @@
 package clarifai
 
-import "strings"
+import (
+	"encoding/json"
+	"errors"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+	"strconv"
+	"strings"
+)
+
+// Client is the interface to exported functions
+type Client interface {
+	ClientID() string
+	ClientSecret() string
+	AccessToken() string
+	Throttled() bool
+	APIRoot() string
+	buildURL(string) string
+	setAPIRoot(string)
+	commonHTTPRequest(url.Values, string, string) ([]byte, error)
+}
 
 // Configurations
 const (
-	Version                 = "v1"
-	RootURL                 = "https://api.clarifai.com"
-	MaxTokenRequestAttempts = 3
+	Version         = "v1"
+	RootURL         = "https://api.clarifai.com"
+	TokenMaxRetries = 2
 )
 
-// Client contains scoped variables forindividual clients
-type Client struct {
-	APIHost              string
-	ClientID             string
-	ClientSecret         string
-	AccessToken          string
-	Throttled            bool
-	TokenRequestAttempts int
+// ClarifaiClient contains scoped variables forindividual clients
+type ClarifaiClient struct {
+	clientID        string
+	clientSecret    string
+	accessToken     string
+	apiRoot         string
+	throttled       bool
+	tokenRetries    int
+	tokenMaxRetries int
+}
+
+// TokenResp is the expected response from /token/
+type TokenResp struct {
+	AccessToken string `json:"access_token"`
+	ExpiresIn   int    `json:"expires_in"`
+	Scope       string `json:"scope"`
+	TokenType   string `json:"token_type"`
 }
 
 // NewClient initializes a new Clarifai client
-func NewClient(clientID, clientSecret string) *Client {
-	return &Client{RootURL, clientID, clientSecret, "", false, 0}
+func NewClient(clientID, clientSecret string) *ClarifaiClient {
+	return &ClarifaiClient{clientID, clientSecret, "unasigned", RootURL, false, 0, TokenMaxRetries}
 }
 
-// SetThrottle is a convenience setter to switch the throttled flag
-func (client *Client) SetThrottle(val bool) {
-	client.Throttled = val
+func (client *ClarifaiClient) requestAccessToken() error {
+	form := url.Values{}
+	form.Set("grant_type", "client_credentials")
+	form.Set("client_id", client.ClientID())
+	form.Set("client_secret", client.ClientSecret())
+	formData := strings.NewReader(form.Encode())
+
+	req, err := http.NewRequest("POST", client.buildURL("token"), formData)
+
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Authorization", "Bearer "+client.AccessToken())
+	req.Header.Set("Content-Length", strconv.Itoa(len(form.Encode())))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	httpClient := &http.Client{}
+	res, err := httpClient.Do(req)
+
+	if err != nil {
+		return err
+	}
+
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+
+	if err != nil {
+		return err
+	}
+
+	token := new(TokenResp)
+	err = json.Unmarshal(body, token)
+
+	if err != nil {
+		return err
+	}
+
+	client.SetAccessToken(token.AccessToken)
+	return nil
+}
+
+func (client *ClarifaiClient) commonHTTPRequest(values url.Values, endpoint, verb string) ([]byte, error) {
+	if values == nil {
+		values = url.Values{}
+	}
+	if client.AccessToken() == "" {
+		err := client.requestAccessToken()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	req, err := http.NewRequest(verb, client.buildURL(endpoint), strings.NewReader(values.Encode()))
+
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Content-Length", strconv.Itoa(len(values.Encode())))
+	req.Header.Set("Authorization", "Bearer "+client.AccessToken())
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	httpClient := &http.Client{}
+	res, err := httpClient.Do(req)
+
+	if err != nil {
+		return nil, err
+	}
+
+	switch res.StatusCode {
+	case 200, 201:
+		defer res.Body.Close()
+
+		body, err := ioutil.ReadAll(res.Body)
+		return body, err
+	case 401:
+		return nil, errors.New("TOKEN_INVALID")
+	case 429:
+		client.setThrottle(true)
+		return nil, errors.New("THROTTLED: " + res.Header.Get("x-throttle-wait-seconds"))
+	case 400:
+		return nil, errors.New("ALL_ERROR")
+	case 500:
+		return nil, errors.New("CLARIFAI_ERROR")
+	default:
+		return nil, errors.New("UNEXPECTED_STATUS_CODE")
+	}
 }
 
 // Helper function to build URLs
-func (client *Client) buildURL(endpoint string) string {
-	parts := []string{client.APIHost, Version, endpoint}
+func (client *ClarifaiClient) buildURL(endpoint string) string {
+	parts := []string{client.APIRoot(), Version, endpoint}
 	return strings.Join(parts, "/")
+}
+
+func (client *ClarifaiClient) ClientID() string {
+	return client.clientID
+}
+
+func (client *ClarifaiClient) ClientSecret() string {
+	return client.clientSecret
+}
+
+func (client *ClarifaiClient) AccessToken() string {
+	return client.accessToken
+}
+
+func (client *ClarifaiClient) SetAccessToken(token string) {
+	client.accessToken = token
+}
+
+func (client *ClarifaiClient) Throttled() bool {
+	return client.throttled
+}
+
+func (client *ClarifaiClient) APIRoot() string {
+	return client.apiRoot
+}
+
+func (client *ClarifaiClient) setAPIRoot(root string) {
+	client.apiRoot = root
+}
+
+func (client *ClarifaiClient) setThrottle(throttle bool) {
+	client.throttled = throttle
 }
