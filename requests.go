@@ -16,8 +16,8 @@ type InfoResp struct {
 	Results       struct {
 		MinImageSize int `json:"min_image_size"`
 		MaxImageSize int `json:"max_image_size"`
-		MaxBatchSize int `json:max_batch_size`
-		APIVersion   int `json:api_version`
+		MaxBatchSize int `json:"max_batch_size"`
+		APIVersion   int `json:"api_version"`
 	}
 }
 
