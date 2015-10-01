@@ -6,28 +6,17 @@ Unofficial library written for the [Clarifai](http://www.clarifai.com) API. It's
 ```go
 package main
 
-import (
-  "fmt"
-
-  "github.com/samuelcouch/clarifai"
-)
+import "fmt"
 
 func main() {
-  // Create a new clarifai client
-  client := clarifai.NewClient("<client_id>", "<client_secret>")
+  client := NewClient("<client_id>", "<client_secret>")
 
-  // Request a new token
-  token, err := client.requestAccessToken()
-  if err != nil {
-    fmt.Println(err)
-  } else {
-    // Print the full response from the token request
-    // &{AccessToken:<token> ExpiresIn:<time> Scope:<scope of token> TokenType:Bearer}
-    fmt.Printf("%+v\n", token)
-    // Show that the token is now saved to the client
-    fmt.Printf("%v\n", client.accessToken)
-  }
+  info, _ := ClarifaiInfo(client)
+
+  fmt.Printf("%+v\n", info)
+  // &{StatusCode:OK StatusMessage:All images in request have completed successfully.  Results:{MaxImageSize:100000 DefaultLanguage:en MaxVideoSize:100000 MaxImageBytes:10485760 DefaultModel:default MaxVideoBytes:104857600 maxVideoDuration:0 MaxVideoBatchSize:1 MinVideoSize:1 MinImageSize:1 MaxBatchSize:128 APIVersion:0.1}}
 }
+
 ```
 
 ## Testing
