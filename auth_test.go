@@ -32,3 +32,24 @@ func TestRequestAccessToken(t *testing.T) {
 		t.Errorf("requestAccessToken() should not return an err upon success: %v", err)
 	}
 }
+
+func TestRequestAccessTokenFail(t *testing.T) {
+	mux := http.NewServeMux()
+	server := httptest.NewServer(mux)
+	client := NewClient(clientID, clientSecret)
+	client.APIHost = server.URL
+
+	defer server.Close()
+
+	mux.HandleFunc("/v1/token", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(400)
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprintln(w, `{"access_token":"U5j3rECLLZ86pWRjK35g489QJ4zrQI","expires_in":36000,"scope": "api_access", "token_type": "Bearer"}`)
+	})
+
+	token, _ := client.requestAccessToken()
+
+	if token != nil {
+		t.Errorf("requestAccessToken() should return an err with an invalid request: %v", token)
+	}
+}
