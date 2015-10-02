@@ -100,11 +100,10 @@ func (client *ClarifaiClient) commonHTTPRequest(values url.Values, endpoint, ver
 	if values == nil {
 		values = url.Values{}
 	}
-	if client.AccessToken() == "" {
-		err := client.requestAccessToken()
-		if err != nil {
-			return nil, err
-		}
+
+	err := client.requestAccessToken()
+	if err != nil {
+		return nil, err
 	}
 
 	req, err := http.NewRequest(verb, client.buildURL(endpoint), strings.NewReader(values.Encode()))
