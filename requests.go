@@ -31,9 +31,9 @@ type TagResp struct {
 	StatusMessage string `json:"status_msg"`
 	Meta          struct {
 		Tag struct {
-			Timestamp float64 `json:"timestamp"`
-			Model     string  `json:"model"`
-			Confid    string  `json:"config"`
+			Timestamp json.Number `json:"timestamp"`
+			Model     string      `json:"model"`
+			Confid    string      `json:"config"`
 		}
 	}
 	Results []TagResults
@@ -49,7 +49,7 @@ type TagResults struct {
 		Tag struct {
 			Classes []string  `json:"classes"`
 			CatIDs  []string  `json:"catids"`
-			Probs   []float32 `json:"probs"`
+			Probs   []float64 `json:"probs"`
 		}
 	}
 	DocIDString string `json:"docid_str"`
