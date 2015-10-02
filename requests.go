@@ -1,6 +1,10 @@
 package clarifai
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"errors"
+	"net/url"
+)
 
 // InfoResp represents the expected JSON response from /info/
 type InfoResp struct {
@@ -22,6 +26,35 @@ type InfoResp struct {
 	}
 }
 
+type TagResp struct {
+	StatusCode    string `json:"status_code"`
+	StatusMessage string `json:"status_msg"`
+	Meta          struct {
+		Tag struct {
+			Timestamp float64 `json:"timestamp"`
+			Model     string  `json:"model"`
+			Confid    string  `json:"config"`
+		}
+	}
+	Results []TagResults
+}
+
+type TagResults struct {
+	DocID         json.Number `json:"docid"`
+	URL           string      `json:"url"`
+	StatusCode    string      `json:"status_code"`
+	StatusMessage string      `json:"status_msg"`
+	LocalID       string      `json:"local_id"`
+	Result        struct {
+		Tag struct {
+			Classes []string  `json:"classes"`
+			CatIDs  []string  `json:"catids"`
+			Probs   []float32 `json:"probs"`
+		}
+	}
+	DocIDString string `json:"docid_str"`
+}
+
 // Info will return the current status info for the given client
 func Info(client Client) (*InfoResp, error) {
 	res, err := client.commonHTTPRequest(nil, "info", "GET")
@@ -34,4 +67,31 @@ func Info(client Client) (*InfoResp, error) {
 	err = json.Unmarshal(res, info)
 
 	return info, err
+}
+
+func Tag(client Client, urls, local_ids []string) (*TagResp, error) {
+	if urls == nil {
+		return nil, errors.New("Requires at least one url")
+	}
+
+	form := url.Values{}
+	for _, url := range urls {
+		form.Add("url", url)
+	}
+	if local_ids != nil {
+		for _, localid := range local_ids {
+			form.Add("local_id", localid)
+		}
+	}
+
+	res, err := client.commonHTTPRequest(form, "tag", "POST")
+
+	if err != nil {
+		return nil, err
+	}
+
+	tagres := new(TagResp)
+	err = json.Unmarshal(res, tagres)
+
+	return tagres, err
 }
