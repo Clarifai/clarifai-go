@@ -21,7 +21,7 @@ func TestInfo(t *testing.T) {
 		fmt.Fprintln(w, `{"status_code":"OK","status_msg":"All images in request have completed successfully. ","results":{"max_image_size":100000,"default_language":"en","max_video_size":100000,"max_image_bytes":10485760,"min_image_size":1,"default_model":"default","max_video_bytes":104857600,"max_video_duration":1800,"max_batch_size":128,"max_video_batch_size":1,"min_video_size":1,"api_version":0.1}}`)
 	})
 
-	_, err := ClarifaiInfo(client)
+	_, err := Info(client)
 
 	if err != nil {
 		t.Errorf("requestAccessToken() should not return an err upon success: %v", err)

@@ -150,26 +150,32 @@ func (client *ClarifaiClient) buildURL(endpoint string) string {
 	return strings.Join(parts, "/")
 }
 
+// ClientID will return the clientID
 func (client *ClarifaiClient) ClientID() string {
 	return client.clientID
 }
 
+// ClientSecret will return the clientSecret
 func (client *ClarifaiClient) ClientSecret() string {
 	return client.clientSecret
 }
 
+// AccessToken will return the current accessToken
 func (client *ClarifaiClient) AccessToken() string {
 	return client.accessToken
 }
 
+// SetAccessToken will set accessToken to a new value
 func (client *ClarifaiClient) SetAccessToken(token string) {
 	client.accessToken = token
 }
 
+// Throttled returns the state of the client being throttled or not
 func (client *ClarifaiClient) Throttled() bool {
 	return client.throttled
 }
 
+// APIRoot returns the root path for the API
 func (client *ClarifaiClient) APIRoot() string {
 	return client.apiRoot
 }

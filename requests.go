@@ -22,7 +22,8 @@ type InfoResp struct {
 	}
 }
 
-func ClarifaiInfo(client Client) (*InfoResp, error) {
+// Info will return the current status info for the given client
+func Info(client Client) (*InfoResp, error) {
 	res, err := client.commonHTTPRequest(nil, "info", "GET")
 
 	if err != nil {
