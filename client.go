@@ -19,7 +19,7 @@ type Client interface {
 	APIRoot() string
 	buildURL(string) string
 	setAPIRoot(string)
-	commonHTTPRequest(url.Values, string, string) ([]byte, error)
+	commonHTTPRequest(url.Values, string, string, bool) ([]byte, error)
 }
 
 // Configurations
@@ -94,14 +94,9 @@ func (client *ClarifaiClient) requestAccessToken() error {
 	return nil
 }
 
-func (client *ClarifaiClient) commonHTTPRequest(values url.Values, endpoint, verb string) ([]byte, error) {
+func (client *ClarifaiClient) commonHTTPRequest(values url.Values, endpoint, verb string, retry bool) ([]byte, error) {
 	if values == nil {
 		values = url.Values{}
-	}
-
-	err := client.requestAccessToken()
-	if err != nil {
-		return nil, err
 	}
 
 	req, err := http.NewRequest(verb, client.buildURL(endpoint), strings.NewReader(values.Encode()))
@@ -124,11 +119,18 @@ func (client *ClarifaiClient) commonHTTPRequest(values url.Values, endpoint, ver
 	switch res.StatusCode {
 	case 200, 201:
 		defer res.Body.Close()
-
 		body, err := ioutil.ReadAll(res.Body)
 		return body, err
 	case 401:
-		return nil, errors.New("TOKEN_INVALID")
+		if !retry {
+			err := client.requestAccessToken()
+			if err != nil {
+				return nil, err
+			}
+			return client.commonHTTPRequest(values, endpoint, verb, true)
+		} else {
+			return nil, errors.New("TOKEN_INVALID")
+		}
 	case 429:
 		client.setThrottle(true)
 		return nil, errors.New("THROTTLED: " + res.Header.Get("x-throttle-wait-seconds"))

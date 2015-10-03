@@ -57,7 +57,7 @@ type TagResults struct {
 
 // Info will return the current status info for the given client
 func Info(client Client) (*InfoResp, error) {
-	res, err := client.commonHTTPRequest(nil, "info", "GET")
+	res, err := client.commonHTTPRequest(nil, "info", "GET", false)
 
 	if err != nil {
 		return nil, err
@@ -84,7 +84,7 @@ func Tag(client Client, urls, local_ids []string) (*TagResp, error) {
 		}
 	}
 
-	res, err := client.commonHTTPRequest(form, "tag", "POST")
+	res, err := client.commonHTTPRequest(form, "tag", "POST", false)
 
 	if err != nil {
 		return nil, err
