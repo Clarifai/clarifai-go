@@ -6,15 +6,31 @@ Unofficial library written for the [Clarifai](http://www.clarifai.com) API. It's
 ```go
 package main
 
-import "fmt"
+import (
+  "fmt"
+
+  "github.com/samuelcouch/clarifai"
+)
 
 func main() {
-  client := NewClient("<client_id>", "<client_secret>")
+  client := clarifai.NewClient("<client_id>", "<client_secret>")
+  // Get the current status of things
+  info, err := clarifai.Info(client)
+  if err != nil {
+    fmt.Println(err)
+  } else {
+    fmt.Printf("%+v\n", info)
+  }
+  // Let's get some context about these images
+  urls := []string{"http://www.clarifai.com/img/metro-north.jpg", "http://www.clarifai.com/img/metro-north.jpg"}
+  // Give it to Clarifai to run their magic
+  tag_data, err := clarifai.Tag(client, urls, nil)
 
-  info, _ := ClarifaiInfo(client)
-
-  fmt.Printf("%+v\n", info)
-  // &{StatusCode:OK StatusMessage:All images in request have completed successfully.  Results:{MaxImageSize:100000 DefaultLanguage:en MaxVideoSize:100000 MaxImageBytes:10485760 DefaultModel:default MaxVideoBytes:104857600 maxVideoDuration:0 MaxVideoBatchSize:1 MinVideoSize:1 MinImageSize:1 MaxBatchSize:128 APIVersion:0.1}}
+  if err != nil {
+    fmt.Println(err)
+  } else {
+    fmt.Printf("%+v\n", tag_data) // See what we got!
+  }
 }
 
 ```
