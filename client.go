@@ -31,13 +31,11 @@ const (
 
 // ClarifaiClient contains scoped variables forindividual clients
 type ClarifaiClient struct {
-	clientID        string
-	clientSecret    string
-	accessToken     string
-	apiRoot         string
-	throttled       bool
-	tokenRetries    int
-	tokenMaxRetries int
+	clientID     string
+	clientSecret string
+	accessToken  string
+	apiRoot      string
+	throttled    bool
 }
 
 // TokenResp is the expected response from /token/
@@ -50,7 +48,7 @@ type TokenResp struct {
 
 // NewClient initializes a new Clarifai client
 func NewClient(clientID, clientSecret string) *ClarifaiClient {
-	return &ClarifaiClient{clientID, clientSecret, "unasigned", RootURL, false, 0, TokenMaxRetries}
+	return &ClarifaiClient{clientID, clientSecret, "unasigned", RootURL, false}
 }
 
 func (client *ClarifaiClient) requestAccessToken() error {
