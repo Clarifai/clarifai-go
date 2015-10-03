@@ -128,9 +128,8 @@ func (client *ClarifaiClient) commonHTTPRequest(values url.Values, endpoint, ver
 				return nil, err
 			}
 			return client.commonHTTPRequest(values, endpoint, verb, true)
-		} else {
-			return nil, errors.New("TOKEN_INVALID")
 		}
+		return nil, errors.New("TOKEN_INVALID")
 	case 429:
 		client.setThrottle(true)
 		return nil, errors.New("THROTTLED: " + res.Header.Get("x-throttle-wait-seconds"))

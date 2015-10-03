@@ -26,6 +26,7 @@ type InfoResp struct {
 	}
 }
 
+// TagResp represents the expected JSON response from /tag/
 type TagResp struct {
 	StatusCode    string `json:"status_code"`
 	StatusMessage string `json:"status_msg"`
@@ -36,10 +37,11 @@ type TagResp struct {
 			Confid    string      `json:"config"`
 		}
 	}
-	Results []TagResults
+	Results []TagResult
 }
 
-type TagResults struct {
+// TagResult represents the expected data for a single tag result
+type TagResult struct {
 	DocID         json.Number `json:"docid"`
 	URL           string      `json:"url"`
 	StatusCode    string      `json:"status_code"`
@@ -69,7 +71,8 @@ func Info(client Client) (*InfoResp, error) {
 	return info, err
 }
 
-func Tag(client Client, urls, local_ids []string) (*TagResp, error) {
+// Tag allows the client to request tag data on a single, or multiple photos
+func Tag(client Client, urls, localIDs []string) (*TagResp, error) {
 	if urls == nil {
 		return nil, errors.New("Requires at least one url")
 	}
@@ -78,9 +81,9 @@ func Tag(client Client, urls, local_ids []string) (*TagResp, error) {
 	for _, url := range urls {
 		form.Add("url", url)
 	}
-	if local_ids != nil {
-		for _, localid := range local_ids {
-			form.Add("local_id", localid)
+	if localIDs != nil {
+		for _, localID := range localIDs {
+			form.Add("local_id", localID)
 		}
 	}
 
