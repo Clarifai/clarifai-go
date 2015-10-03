@@ -15,6 +15,12 @@ func TestInfo(t *testing.T) {
 
 	defer server.Close()
 
+	mux.HandleFunc("/v1/token", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprintln(w, `{"access_token":"1234567890abcdefg","expires_in":36000,"scope": "api_access", "token_type": "Bearer"}`)
+	})
+
 	mux.HandleFunc("/v1/info", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
 		w.Header().Set("Content-Type", "application/json")
@@ -35,6 +41,12 @@ func TestTagMultiple(t *testing.T) {
 	client.setAPIRoot(server.URL)
 
 	defer server.Close()
+
+	mux.HandleFunc("/v1/token", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprintln(w, `{"access_token":"1234567890abcdefg","expires_in":36000,"scope": "api_access", "token_type": "Bearer"}`)
+	})
 
 	mux.HandleFunc("/v1/tag", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
