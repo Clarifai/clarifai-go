@@ -17,7 +17,7 @@ type InfoResp struct {
 		MaxImageBytes     int     `json:"max_image_bytes"`
 		DefaultModel      string  `json:"default_model"`
 		MaxVideoBytes     int     `json:"max_video_bytes"`
-		maxVideoDuration  int     `json:"max_video_duration"`
+		MaxVideoDuration  int     `json:"max_video_duration"`
 		MaxVideoBatchSize int     `json:"max_video_batch_size"`
 		MinVideoSize      int     `json:"min_video_size"`
 		MinImageSize      int     `json:"min_image_size"`
