@@ -58,7 +58,7 @@ type TagResult struct {
 }
 
 // Info will return the current status info for the given client
-func (client *ClarifaiClient) Info() (*InfoResp, error) {
+func (client *Client) Info() (*InfoResp, error) {
 	res, err := client.commonHTTPRequest(nil, "info", "GET", false)
 
 	if err != nil {
@@ -72,7 +72,7 @@ func (client *ClarifaiClient) Info() (*InfoResp, error) {
 }
 
 // Tag allows the client to request tag data on a single, or multiple photos
-func (client *ClarifaiClient) Tag(urls, localIDs []string) (*TagResp, error) {
+func (client *Client) Tag(urls, localIDs []string) (*TagResp, error) {
 	if urls == nil {
 		return nil, errors.New("Requires at least one url")
 	}

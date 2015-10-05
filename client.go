@@ -16,8 +16,8 @@ const (
 	rootURL = "https://api.clarifai.com"
 )
 
-// ClarifaiClient contains scoped variables forindividual clients
-type ClarifaiClient struct {
+// Client contains scoped variables forindividual clients
+type Client struct {
 	clientID     string
 	clientSecret string
 	accessToken  string
@@ -34,11 +34,11 @@ type TokenResp struct {
 }
 
 // NewClient initializes a new Clarifai client
-func NewClient(clientID, clientSecret string) *ClarifaiClient {
-	return &ClarifaiClient{clientID, clientSecret, "unasigned", rootURL, false}
+func NewClient(clientID, clientSecret string) *Client {
+	return &Client{clientID, clientSecret, "unasigned", rootURL, false}
 }
 
-func (client *ClarifaiClient) requestAccessToken() error {
+func (client *Client) requestAccessToken() error {
 	form := url.Values{}
 	form.Set("grant_type", "client_credentials")
 	form.Set("client_id", client.ClientID())
@@ -81,7 +81,7 @@ func (client *ClarifaiClient) requestAccessToken() error {
 	return nil
 }
 
-func (client *ClarifaiClient) commonHTTPRequest(values url.Values, endpoint, verb string, retry bool) ([]byte, error) {
+func (client *Client) commonHTTPRequest(values url.Values, endpoint, verb string, retry bool) ([]byte, error) {
 	if values == nil {
 		values = url.Values{}
 	}
@@ -130,45 +130,45 @@ func (client *ClarifaiClient) commonHTTPRequest(values url.Values, endpoint, ver
 }
 
 // Helper function to build URLs
-func (client *ClarifaiClient) buildURL(endpoint string) string {
+func (client *Client) buildURL(endpoint string) string {
 	parts := []string{client.APIRoot(), version, endpoint}
 	return strings.Join(parts, "/")
 }
 
 // ClientID will return the clientID
-func (client *ClarifaiClient) ClientID() string {
+func (client *Client) ClientID() string {
 	return client.clientID
 }
 
 // ClientSecret will return the clientSecret
-func (client *ClarifaiClient) ClientSecret() string {
+func (client *Client) ClientSecret() string {
 	return client.clientSecret
 }
 
 // AccessToken will return the current accessToken
-func (client *ClarifaiClient) AccessToken() string {
+func (client *Client) AccessToken() string {
 	return client.accessToken
 }
 
 // SetAccessToken will set accessToken to a new value
-func (client *ClarifaiClient) SetAccessToken(token string) {
+func (client *Client) SetAccessToken(token string) {
 	client.accessToken = token
 }
 
 // Throttled returns the state of the client being throttled or not
-func (client *ClarifaiClient) Throttled() bool {
+func (client *Client) Throttled() bool {
 	return client.throttled
 }
 
 // APIRoot returns the root path for the API
-func (client *ClarifaiClient) APIRoot() string {
+func (client *Client) APIRoot() string {
 	return client.apiRoot
 }
 
-func (client *ClarifaiClient) setAPIRoot(root string) {
+func (client *Client) setAPIRoot(root string) {
 	client.apiRoot = root
 }
 
-func (client *ClarifaiClient) setThrottle(throttle bool) {
+func (client *Client) setThrottle(throttle bool) {
 	client.throttled = throttle
 }
