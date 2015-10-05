@@ -10,23 +10,10 @@ import (
 	"strings"
 )
 
-// Client is the interface to exported functions
-type Client interface {
-	ClientID() string
-	ClientSecret() string
-	AccessToken() string
-	Throttled() bool
-	APIRoot() string
-	buildURL(string) string
-	setAPIRoot(string)
-	commonHTTPRequest(url.Values, string, string, bool) ([]byte, error)
-}
-
 // Configurations
 const (
-	Version         = "v1"
-	RootURL         = "https://api.clarifai.com"
-	TokenMaxRetries = 2
+	version = "v1"
+	rootURL = "https://api.clarifai.com"
 )
 
 // ClarifaiClient contains scoped variables forindividual clients
@@ -48,7 +35,7 @@ type TokenResp struct {
 
 // NewClient initializes a new Clarifai client
 func NewClient(clientID, clientSecret string) *ClarifaiClient {
-	return &ClarifaiClient{clientID, clientSecret, "unasigned", RootURL, false}
+	return &ClarifaiClient{clientID, clientSecret, "unasigned", rootURL, false}
 }
 
 func (client *ClarifaiClient) requestAccessToken() error {
@@ -144,7 +131,7 @@ func (client *ClarifaiClient) commonHTTPRequest(values url.Values, endpoint, ver
 
 // Helper function to build URLs
 func (client *ClarifaiClient) buildURL(endpoint string) string {
-	parts := []string{client.APIRoot(), Version, endpoint}
+	parts := []string{client.APIRoot(), version, endpoint}
 	return strings.Join(parts, "/")
 }
 
