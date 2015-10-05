@@ -42,11 +42,11 @@ type TagResp struct {
 
 // TagResult represents the expected data for a single tag result
 type TagResult struct {
-	DocID         json.Number `json:"docid"`
-	URL           string      `json:"url"`
-	StatusCode    string      `json:"status_code"`
-	StatusMessage string      `json:"status_msg"`
-	LocalID       string      `json:"local_id"`
+	DocID         uint64 `json:"docid"`
+	URL           string `json:"url"`
+	StatusCode    string `json:"status_code"`
+	StatusMessage string `json:"status_msg"`
+	LocalID       string `json:"local_id"`
 	Result        struct {
 		Tag struct {
 			Classes []string  `json:"classes"`
