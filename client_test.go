@@ -21,7 +21,7 @@ func TestNewClarifaiClient(t *testing.T) {
 
 func TestNewClarifaiClientStoredValues(t *testing.T) {
 	client := NewClient(ClientID, ClientSecret)
-	if client.ClientID() != ClientID || client.ClientSecret() != ClientSecret {
+	if client.ClientID != ClientID || client.ClientSecret != ClientSecret {
 		t.Error("NewClient should store the values of clientID and clientSecret")
 	}
 }
@@ -86,7 +86,7 @@ func TestAccessTokenIsSaved(t *testing.T) {
 		t.Errorf("requestAccessToken() should not return err with a valid response")
 	}
 
-	if client.AccessToken() != "1234567890abcdefg" {
-		t.Errorf("requestAccessToken() should store the access token. Expected: 1234567890abcdefg, Got: %v", client.AccessToken())
+	if client.AccessToken != "1234567890abcdefg" {
+		t.Errorf("requestAccessToken() should store the access token. Expected: 1234567890abcdefg, Got: %v", client.AccessToken)
 	}
 }

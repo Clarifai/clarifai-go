@@ -18,11 +18,11 @@ const (
 
 // Client contains scoped variables forindividual clients
 type Client struct {
-	clientID     string
-	clientSecret string
-	accessToken  string
-	apiRoot      string
-	throttled    bool
+	ClientID     string
+	ClientSecret string
+	AccessToken  string
+	ApiRoot      string
+	Throttled    bool
 }
 
 // TokenResp is the expected response from /token/
@@ -41,8 +41,8 @@ func NewClient(clientID, clientSecret string) *Client {
 func (client *Client) requestAccessToken() error {
 	form := url.Values{}
 	form.Set("grant_type", "client_credentials")
-	form.Set("client_id", client.ClientID())
-	form.Set("client_secret", client.ClientSecret())
+	form.Set("client_id", client.ClientID)
+	form.Set("client_secret", client.ClientSecret)
 	formData := strings.NewReader(form.Encode())
 
 	req, err := http.NewRequest("POST", client.buildURL("token"), formData)
@@ -51,7 +51,7 @@ func (client *Client) requestAccessToken() error {
 		return err
 	}
 
-	req.Header.Set("Authorization", "Bearer "+client.AccessToken())
+	req.Header.Set("Authorization", "Bearer "+client.AccessToken)
 	req.Header.Set("Content-Length", strconv.Itoa(len(form.Encode())))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
@@ -93,7 +93,7 @@ func (client *Client) commonHTTPRequest(values url.Values, endpoint, verb string
 	}
 
 	req.Header.Set("Content-Length", strconv.Itoa(len(values.Encode())))
-	req.Header.Set("Authorization", "Bearer "+client.AccessToken())
+	req.Header.Set("Authorization", "Bearer "+client.AccessToken)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	httpClient := &http.Client{}
@@ -131,44 +131,19 @@ func (client *Client) commonHTTPRequest(values url.Values, endpoint, verb string
 
 // Helper function to build URLs
 func (client *Client) buildURL(endpoint string) string {
-	parts := []string{client.APIRoot(), version, endpoint}
+	parts := []string{client.ApiRoot, version, endpoint}
 	return strings.Join(parts, "/")
-}
-
-// ClientID will return the clientID
-func (client *Client) ClientID() string {
-	return client.clientID
-}
-
-// ClientSecret will return the clientSecret
-func (client *Client) ClientSecret() string {
-	return client.clientSecret
-}
-
-// AccessToken will return the current accessToken
-func (client *Client) AccessToken() string {
-	return client.accessToken
 }
 
 // SetAccessToken will set accessToken to a new value
 func (client *Client) SetAccessToken(token string) {
-	client.accessToken = token
-}
-
-// Throttled returns the state of the client being throttled or not
-func (client *Client) Throttled() bool {
-	return client.throttled
-}
-
-// APIRoot returns the root path for the API
-func (client *Client) APIRoot() string {
-	return client.apiRoot
+	client.AccessToken = token
 }
 
 func (client *Client) setAPIRoot(root string) {
-	client.apiRoot = root
+	client.ApiRoot = root
 }
 
 func (client *Client) setThrottle(throttle bool) {
-	client.throttled = throttle
+	client.Throttled = throttle
 }
