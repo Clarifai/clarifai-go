@@ -105,6 +105,9 @@ func (client *Client) commonHTTPRequest(values url.Values, endpoint, verb string
 
 	switch res.StatusCode {
 	case 200, 201:
+		if client.Throttled {
+			client.setThrottle(false)
+		}
 		defer res.Body.Close()
 		body, err := ioutil.ReadAll(res.Body)
 		return body, err
