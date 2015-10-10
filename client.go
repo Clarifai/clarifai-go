@@ -21,7 +21,7 @@ type Client struct {
 	ClientID     string
 	ClientSecret string
 	AccessToken  string
-	ApiRoot      string
+	APIRoot      string
 	Throttled    bool
 }
 
@@ -134,7 +134,7 @@ func (client *Client) commonHTTPRequest(values url.Values, endpoint, verb string
 
 // Helper function to build URLs
 func (client *Client) buildURL(endpoint string) string {
-	parts := []string{client.ApiRoot, version, endpoint}
+	parts := []string{client.APIRoot, version, endpoint}
 	return strings.Join(parts, "/")
 }
 
@@ -144,7 +144,7 @@ func (client *Client) SetAccessToken(token string) {
 }
 
 func (client *Client) setAPIRoot(root string) {
-	client.ApiRoot = root
+	client.APIRoot = root
 }
 
 func (client *Client) setThrottle(throttle bool) {
