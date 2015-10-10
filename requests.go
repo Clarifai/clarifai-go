@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/url"
+	"strings"
 )
 
 // InfoResp represents the expected JSON response from /info/
@@ -57,6 +58,23 @@ type TagResult struct {
 	DocIDString string `json:"docid_str"`
 }
 
+// FeedbackForm is used to send feedback back to Clarifai
+type FeedbackForm struct {
+	DocIDs           []string
+	URLs             []string
+	AddTags          []string
+	RemoveTags       []string
+	DissimilarDocIDs []string
+	SimilarDocIDs    []string
+	SearchClick      []string
+}
+
+// FeedbackResp is the expected response from /feedback/
+type FeedbackResp struct {
+	StatusCode    string `json:"status_code"`
+	StatusMessage string `json:"status_msg"`
+}
+
 // Info will return the current status info for the given client
 func (client *Client) Info() (*InfoResp, error) {
 	res, err := client.commonHTTPRequest(nil, "info", "GET", false)
@@ -97,4 +115,51 @@ func (client *Client) Tag(urls, localIDs []string) (*TagResp, error) {
 	err = json.Unmarshal(res, tagres)
 
 	return tagres, err
+}
+
+// Feedback allows the user to provide contextual feedback to Clarifai in order to improve their results
+func (client *Client) Feedback(params FeedbackForm) (*FeedbackResp, error) {
+	if params.DocIDs == nil && params.URLs == nil {
+		return nil, errors.New("Requires at least one docid or url")
+	}
+
+	if params.DocIDs != nil && params.URLs != nil {
+		return nil, errors.New("Request must provide exactly one of the following fields: {'DocIDs', 'URLs'}")
+	}
+
+	form := url.Values{}
+
+	if params.DocIDs != nil {
+		form.Add("docids", strings.Join(params.DocIDs, ","))
+	} else {
+		form.Add("url", strings.Join(params.URLs, ","))
+	}
+
+	if params.AddTags != nil {
+		form.Add("add_tags", strings.Join(params.AddTags, ","))
+	}
+
+	if params.RemoveTags != nil {
+		form.Add("remove_tags", strings.Join(params.RemoveTags, ","))
+	}
+
+	if params.DissimilarDocIDs != nil {
+		form.Add("dissimilar_docids", strings.Join(params.DissimilarDocIDs, ","))
+	}
+
+	if params.SimilarDocIDs != nil {
+		form.Add("similar_docids", strings.Join(params.SimilarDocIDs, ","))
+	}
+
+	if params.SearchClick != nil {
+		form.Add("search_click", strings.Join(params.SearchClick, ","))
+	}
+
+	res, err := client.commonHTTPRequest(form, "feedback", "POST", false)
+
+	feedbackres := new(FeedbackResp)
+	err = json.Unmarshal(res, feedbackres)
+
+	return feedbackres, err
+
 }

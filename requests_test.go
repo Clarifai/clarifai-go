@@ -61,3 +61,34 @@ func TestTagMultiple(t *testing.T) {
 		t.Errorf("Tag() should not return error with valid request: %q\n", err)
 	}
 }
+
+func TestFeedback(t *testing.T) {
+	mux := http.NewServeMux()
+	server := httptest.NewServer(mux)
+	client := NewClient(ClientID, ClientSecret)
+	client.setAPIRoot(server.URL)
+
+	defer server.Close()
+
+	mux.HandleFunc("/v1/feedback", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprintln(w, `{"access_token":"1234567890abcdefg","expires_in":36000,"scope": "api_access", "token_type": "Bearer"}`)
+	})
+
+	mux.HandleFunc("/v1/tag", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprintln(w, `{"status_code":"OK","status_msg":"Feedback successfully recorded."}`)
+	})
+
+	feedback := FeedbackForm{
+		URLs:    []string{"http://www.clarifai.com/img/metro-north.jpg"},
+		AddTags: []string{"good", "work"},
+	}
+	_, err := client.Feedback(feedback)
+
+	if err != nil {
+		t.Errorf("Feedback() should not return error with valid request: %q\n", err)
+	}
+}
