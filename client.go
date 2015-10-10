@@ -122,7 +122,7 @@ func (client *Client) commonHTTPRequest(values url.Values, endpoint, verb string
 		return nil, errors.New("TOKEN_INVALID")
 	case 429:
 		client.setThrottle(true)
-		return nil, errors.New("THROTTLED: " + res.Header.Get("x-throttle-wait-seconds"))
+		return nil, errors.New("THROTTLED")
 	case 400:
 		return nil, errors.New("ALL_ERROR")
 	case 500:
