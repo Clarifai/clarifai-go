@@ -1,3 +1,4 @@
+// Package clarifai provides a client interface to the Clarifai public API
 package clarifai
 
 import (
