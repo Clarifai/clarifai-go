@@ -78,7 +78,7 @@ func (client *Client) requestAccessToken() error {
 		return err
 	}
 
-	client.SetAccessToken(token.AccessToken)
+	client.setAccessToken(token.AccessToken)
 	return nil
 }
 
@@ -140,7 +140,7 @@ func (client *Client) buildURL(endpoint string) string {
 }
 
 // SetAccessToken will set accessToken to a new value
-func (client *Client) SetAccessToken(token string) {
+func (client *Client) setAccessToken(token string) {
 	client.AccessToken = token
 }
 
