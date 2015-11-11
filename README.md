@@ -5,7 +5,7 @@ Unofficial library written for the [Clarifai](http://www.clarifai.com) API.
 [![GoDoc](https://godoc.org/github.com/samuelcouch/clarifai?status.svg)](https://godoc.org/github.com/samuelcouch/clarifai)
 
 ## Usage
-`go get github.com/samuelcouch/clarifai`
+`go get github.com/clarifai/clarifai-go`
 
 
 ```go
@@ -14,7 +14,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/samuelcouch/clarifai"
+	"github.com/clarifai/clarifai-go"
 )
 
 func main() {
@@ -52,3 +52,7 @@ func main() {
 
 ## Testing
 Run `go test`
+
+##Special Thanks
+
+Thanks so much to [Samuel Couch](https://github.com/samuelcouch) for his amazing contribution to the Clarifai client libraries by starting this one and graciously handing it off to us. Follow him on Twitter [@SamuelCouch](http://twitter.com/SamuelCouch).
