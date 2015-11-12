@@ -1,6 +1,6 @@
 # Clarifai Golang Library
 
-Library for our [Clarifai](http://www.clarifai.com) API.
+Library for our [API](https://developer.clarifai.com/docs/).
 
 [![GoDoc](https://godoc.org/github.com/Clarifai/clarifai-go?status.svg)](https://godoc.org/github.com/Clarifai/clarifai-go)
 
