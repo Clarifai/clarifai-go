@@ -1,8 +1,8 @@
 # Clarifai Golang Library
 
-Unofficial library written for the [Clarifai](http://www.clarifai.com) API.
+Library for our [API](https://developer.clarifai.com/docs/).
 
-[![GoDoc](https://godoc.org/github.com/clarifai/clarifai-go?status.svg)](https://godoc.org/github.com/clarifai/clarifai-go)
+[![GoDoc](https://godoc.org/github.com/Clarifai/clarifai-go?status.svg)](https://godoc.org/github.com/Clarifai/clarifai-go)
 
 ## Usage
 `go get github.com/clarifai/clarifai-go`
@@ -55,4 +55,4 @@ Run `go test`
 
 ##Special Thanks
 
-Thanks so much to [Samuel Couch](https://github.com/samuelcouch) for his amazing contribution to the Clarifai client libraries by starting this one and graciously handing it off to us. Follow him on Twitter [@SamuelCouch](http://twitter.com/SamuelCouch).
+Thanks so much to [Sam Couch](https://github.com/samuelcouch) for his amazing contribution to the Clarifai client libraries by starting this one and graciously handing it off to us. Follow him on Twitter [@SamuelCouch](http://twitter.com/SamuelCouch).
