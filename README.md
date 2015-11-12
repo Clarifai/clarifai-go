@@ -55,4 +55,4 @@ Run `go test`
 
 ##Special Thanks
 
-Thanks so much to [Samuel Couch](https://github.com/samuelcouch) for his amazing contribution to the Clarifai client libraries by starting this one and graciously handing it off to us. Follow him on Twitter [@SamuelCouch](http://twitter.com/SamuelCouch).
+Thanks so much to [Sam Couch](https://github.com/samuelcouch) for his amazing contribution to the Clarifai client libraries by starting this one and graciously handing it off to us. Follow him on Twitter [@SamuelCouch](http://twitter.com/SamuelCouch).
