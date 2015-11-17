@@ -52,7 +52,7 @@ type TagResult struct {
 		Tag struct {
 			Classes []string  `json:"classes"`
 			CatIDs  []string  `json:"catids"`
-			Probs   []float64 `json:"probs"`
+			Probs   []float32 `json:"probs"`
 		}
 	}
 	DocIDString string `json:"docid_str"`
