@@ -29,7 +29,7 @@ func main() {
 	// Let's get some context about these images
 	urls := []string{"http://www.clarifai.com/img/metro-north.jpg", "http://www.clarifai.com/img/metro-north.jpg"}
 	// Give it to Clarifai to run their magic
-	tag_data, err := client.Tag(urls, nil)
+	tag_data, err := client.Tag(clarifai.TagRequest{URLs: urls})
 
 	if err != nil {
 		fmt.Println(err)

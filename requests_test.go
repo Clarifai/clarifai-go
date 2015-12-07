@@ -55,7 +55,7 @@ func TestTagMultiple(t *testing.T) {
 	})
 
 	urls := []string{"http://www.clarifai.com/img/metro-north.jpg", "http://www.clarifai.com/img/metro-north.jpg"}
-	_, err := client.Tag(urls, nil)
+	_, err := client.Tag(TagRequest{URLs: urls})
 
 	if err != nil {
 		t.Errorf("Tag() should not return error with valid request: %q\n", err)

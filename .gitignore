@@ -13,6 +13,10 @@ _test
 *.[568vq]
 [568vq].out
 
+# IntelliJ
+*.iml
+.idea
+
 *.cgo1.go
 *.cgo2.c
 _cgo_defun.c
@@ -24,5 +28,6 @@ _testmain.go
 *.exe
 *.test
 *.prof
+*.sw[nop]
 
 mct.go

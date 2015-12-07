@@ -3,8 +3,6 @@ package clarifai
 import (
 	"encoding/json"
 	"errors"
-	"net/url"
-	"strings"
 )
 
 // InfoResp represents the expected JSON response from /info/
@@ -25,6 +23,12 @@ type InfoResp struct {
 		MaxBatchSize      int     `json:"max_batch_size"`
 		APIVersion        float32 `json:"api_version"`
 	}
+}
+
+// TagRequest represents a JSON request for /tag/
+type TagRequest struct {
+	URLs     []string `json:"url"`
+	LocalIDs []string `json:"local_ids,omitempty"`
 }
 
 // TagResp represents the expected JSON response from /tag/
@@ -60,13 +64,13 @@ type TagResult struct {
 
 // FeedbackForm is used to send feedback back to Clarifai
 type FeedbackForm struct {
-	DocIDs           []string
-	URLs             []string
-	AddTags          []string
-	RemoveTags       []string
-	DissimilarDocIDs []string
-	SimilarDocIDs    []string
-	SearchClick      []string
+	DocIDs           []string `json:"docids,omitempty"`
+	URLs             []string `json:"url,omitempty"`
+	AddTags          []string `json:"add_tags,omitempty"`
+	RemoveTags       []string `json:"remove_tags,omitempty"`
+	DissimilarDocIDs []string `json:"dissimilar_docids,omitempty"`
+	SimilarDocIDs    []string `json:"similar_docids,omitempty"`
+	SearchClick      []string `json:"search_click,omitempty"`
 }
 
 // FeedbackResp is the expected response from /feedback/
@@ -90,22 +94,12 @@ func (client *Client) Info() (*InfoResp, error) {
 }
 
 // Tag allows the client to request tag data on a single, or multiple photos
-func (client *Client) Tag(urls, localIDs []string) (*TagResp, error) {
-	if urls == nil {
+func (client *Client) Tag(req TagRequest) (*TagResp, error) {
+	if len(req.URLs) < 1 {
 		return nil, errors.New("Requires at least one url")
 	}
 
-	form := url.Values{}
-	for _, url := range urls {
-		form.Add("url", url)
-	}
-	if localIDs != nil {
-		for _, localID := range localIDs {
-			form.Add("local_id", localID)
-		}
-	}
-
-	res, err := client.commonHTTPRequest(form, "tag", "POST", false)
+	res, err := client.commonHTTPRequest(req, "tag", "POST", false)
 
 	if err != nil {
 		return nil, err
@@ -118,41 +112,13 @@ func (client *Client) Tag(urls, localIDs []string) (*TagResp, error) {
 }
 
 // Feedback allows the user to provide contextual feedback to Clarifai in order to improve their results
-func (client *Client) Feedback(params FeedbackForm) (*FeedbackResp, error) {
-	if params.DocIDs == nil && params.URLs == nil {
+func (client *Client) Feedback(form FeedbackForm) (*FeedbackResp, error) {
+	if form.DocIDs == nil && form.URLs == nil {
 		return nil, errors.New("Requires at least one docid or url")
 	}
 
-	if params.DocIDs != nil && params.URLs != nil {
+	if form.DocIDs != nil && form.URLs != nil {
 		return nil, errors.New("Request must provide exactly one of the following fields: {'DocIDs', 'URLs'}")
-	}
-
-	form := url.Values{}
-
-	if params.DocIDs != nil {
-		form.Add("docids", strings.Join(params.DocIDs, ","))
-	} else {
-		form.Add("url", strings.Join(params.URLs, ","))
-	}
-
-	if params.AddTags != nil {
-		form.Add("add_tags", strings.Join(params.AddTags, ","))
-	}
-
-	if params.RemoveTags != nil {
-		form.Add("remove_tags", strings.Join(params.RemoveTags, ","))
-	}
-
-	if params.DissimilarDocIDs != nil {
-		form.Add("dissimilar_docids", strings.Join(params.DissimilarDocIDs, ","))
-	}
-
-	if params.SimilarDocIDs != nil {
-		form.Add("similar_docids", strings.Join(params.SimilarDocIDs, ","))
-	}
-
-	if params.SearchClick != nil {
-		form.Add("search_click", strings.Join(params.SearchClick, ","))
 	}
 
 	res, err := client.commonHTTPRequest(form, "feedback", "POST", false)
