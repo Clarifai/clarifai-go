@@ -2,6 +2,7 @@
 package clarifai
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"io/ioutil"
@@ -82,20 +83,26 @@ func (client *Client) requestAccessToken() error {
 	return nil
 }
 
-func (client *Client) commonHTTPRequest(values url.Values, endpoint, verb string, retry bool) ([]byte, error) {
-	if values == nil {
-		values = url.Values{}
+func (client *Client) commonHTTPRequest(jsonBody interface{}, endpoint, verb string, retry bool) ([]byte, error) {
+	if jsonBody == nil {
+		jsonBody = struct{}{}
 	}
 
-	req, err := http.NewRequest(verb, client.buildURL(endpoint), strings.NewReader(values.Encode()))
+	body, err := json.Marshal(jsonBody)
 
 	if err != nil {
 		return nil, err
 	}
 
-	req.Header.Set("Content-Length", strconv.Itoa(len(values.Encode())))
+	req, err := http.NewRequest(verb, client.buildURL(endpoint), bytes.NewReader(body))
+
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Content-Length", strconv.Itoa(len(body)))
 	req.Header.Set("Authorization", "Bearer "+client.AccessToken)
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Content-Type", "application/json")
 
 	httpClient := &http.Client{}
 	res, err := httpClient.Do(req)
@@ -118,7 +125,7 @@ func (client *Client) commonHTTPRequest(values url.Values, endpoint, verb string
 			if err != nil {
 				return nil, err
 			}
-			return client.commonHTTPRequest(values, endpoint, verb, true)
+			return client.commonHTTPRequest(jsonBody, endpoint, verb, true)
 		}
 		return nil, errors.New("TOKEN_INVALID")
 	case 429:
