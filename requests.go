@@ -29,6 +29,7 @@ type InfoResp struct {
 type TagRequest struct {
 	URLs     []string `json:"url"`
 	LocalIDs []string `json:"local_ids,omitempty"`
+	Model    string   `json:"model,omitempty"`
 }
 
 // TagResp represents the expected JSON response from /tag/
