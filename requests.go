@@ -41,7 +41,7 @@ type TagResp struct {
 		Tag struct {
 			Timestamp json.Number `json:"timestamp"`
 			Model     string      `json:"model"`
-			Confid    string      `json:"config"`
+			Config    string      `json:"config"`
 		}
 	}
 	Results []TagResult
