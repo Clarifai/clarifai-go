@@ -3,6 +3,7 @@ package clarifai
 import (
 	"encoding/json"
 	"errors"
+	"math/big"
 )
 
 // InfoResp represents the expected JSON response from /info/
@@ -40,7 +41,7 @@ type TagResp struct {
 		Tag struct {
 			Timestamp json.Number `json:"timestamp"`
 			Model     string      `json:"model"`
-			Confid    string      `json:"config"`
+			Config    string      `json:"config"`
 		}
 	}
 	Results []TagResult
@@ -48,11 +49,11 @@ type TagResp struct {
 
 // TagResult represents the expected data for a single tag result
 type TagResult struct {
-	DocID         uint64 `json:"docid"`
-	URL           string `json:"url"`
-	StatusCode    string `json:"status_code"`
-	StatusMessage string `json:"status_msg"`
-	LocalID       string `json:"local_id"`
+	DocID         *big.Int `json:"docid"`
+	URL           string   `json:"url"`
+	StatusCode    string   `json:"status_code"`
+	StatusMessage string   `json:"status_msg"`
+	LocalID       string   `json:"local_id"`
 	Result        struct {
 		Tag struct {
 			Classes []string  `json:"classes"`
