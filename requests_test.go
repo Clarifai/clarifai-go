@@ -3,17 +3,13 @@ package clarifai
 import (
 	"fmt"
 	"net/http"
-	"net/http/httptest"
+	"reflect"
 	"testing"
 )
 
 func TestInfo(t *testing.T) {
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	client := NewClient(ClientID, ClientSecret)
-	client.setAPIRoot(server.URL)
-
-	defer server.Close()
+	setup()
+	defer teardown()
 
 	mux.HandleFunc("/v1/token", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
@@ -27,20 +23,38 @@ func TestInfo(t *testing.T) {
 		fmt.Fprintln(w, `{"status_code":"OK","status_msg":"All images in request have completed successfully. ","results":{"max_image_size":100000,"default_language":"en","max_video_size":100000,"max_image_bytes":10485760,"min_image_size":1,"default_model":"default","max_video_bytes":104857600,"max_video_duration":1800,"max_batch_size":128,"max_video_batch_size":1,"min_video_size":1,"api_version":0.1}}`)
 	})
 
-	_, err := client.Info()
-
+	resp, err := client.Info()
 	if err != nil {
 		t.Errorf("requestAccessToken() should not return an err upon success: %v", err)
+	}
+
+	expected := &InfoResp{
+		StatusCode:    "OK",
+		StatusMessage: "All images in request have completed successfully. ",
+		Results: Result{
+			MaxImageSize:      100000,
+			DefaultLanguage:   "en",
+			MaxVideoSize:      100000,
+			MaxImageBytes:     10485760,
+			DefaultModel:      "default",
+			MaxVideoBytes:     104857600,
+			MaxVideoDuration:  1800,
+			MaxBatchSize:      128,
+			MinImageSize:      1,
+			MinVideoSize:      1,
+			MaxVideoBatchSize: 1,
+			APIVersion:        0.1,
+		},
+	}
+
+	if !reflect.DeepEqual(resp, expected) {
+		t.Error("unexpected data received from response")
 	}
 }
 
 func TestTagMultiple(t *testing.T) {
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	client := NewClient(ClientID, ClientSecret)
-	client.setAPIRoot(server.URL)
-
-	defer server.Close()
+	setup()
+	defer teardown()
 
 	mux.HandleFunc("/v1/token", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
@@ -63,12 +77,8 @@ func TestTagMultiple(t *testing.T) {
 }
 
 func TestFeedback(t *testing.T) {
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	client := NewClient(ClientID, ClientSecret)
-	client.setAPIRoot(server.URL)
-
-	defer server.Close()
+	setup()
+	defer teardown()
 
 	mux.HandleFunc("/v1/feedback", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
@@ -86,8 +96,8 @@ func TestFeedback(t *testing.T) {
 		URLs:    []string{"http://www.clarifai.com/img/metro-north.jpg"},
 		AddTags: []string{"good", "work"},
 	}
-	_, err := client.Feedback(feedback)
 
+	_, err := client.Feedback(feedback)
 	if err != nil {
 		t.Errorf("Feedback() should not return error with valid request: %q\n", err)
 	}

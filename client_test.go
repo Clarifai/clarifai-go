@@ -12,9 +12,25 @@ const (
 	ClientSecret = "CLIENT_SECRET"
 )
 
+var (
+	mux    *http.ServeMux
+	server *httptest.Server
+	client *Client
+)
+
+func setup() {
+	mux = http.NewServeMux()
+	server = httptest.NewServer(mux)
+	client = NewClient(ClientID, ClientSecret)
+	client.setAPIRoot(server.URL)
+}
+
+func teardown() {
+	server.Close()
+}
+
 func TestNewClarifaiClient(t *testing.T) {
-	client := NewClient(ClientID, ClientSecret)
-	if client == nil {
+	if client := NewClient(ClientID, ClientSecret); client == nil {
 		t.Error("NewClient should not return nil")
 	}
 }
@@ -27,12 +43,8 @@ func TestNewClarifaiClientStoredValues(t *testing.T) {
 }
 
 func TestRequestAccessToken(t *testing.T) {
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	client := NewClient(ClientID, ClientSecret)
-	client.setAPIRoot(server.URL)
-
-	defer server.Close()
+	setup()
+	defer teardown()
 
 	mux.HandleFunc("/v1/token", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
@@ -40,39 +52,27 @@ func TestRequestAccessToken(t *testing.T) {
 		fmt.Fprintln(w, `{"access_token":"1234567890abcdefg","expires_in":36000,"scope": "api_access", "token_type": "Bearer"}`)
 	})
 
-	err := client.requestAccessToken()
-
-	if err != nil {
-		t.Errorf("requestAccessToken() should not return an err upon success: %v", err)
+	if err := client.requestAccessToken(); err != nil {
+		t.Errorf("requestAccessToken() should not return an err upon success: %q", err)
 	}
 }
 
 func TestRequestAccessTokenFail(t *testing.T) {
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	client := NewClient(ClientID, ClientSecret)
-	client.setAPIRoot(server.URL)
-
-	defer server.Close()
+	setup()
+	defer teardown()
 
 	mux.HandleFunc("/v1/token", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(400)
 	})
 
-	err := client.requestAccessToken()
-
-	if err == nil {
+	if err := client.requestAccessToken(); err == nil {
 		t.Errorf("requestAccessToken() should return an err with an invalid request: %v", err)
 	}
 }
 
 func TestAccessTokenIsSaved(t *testing.T) {
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	client := NewClient(ClientID, ClientSecret)
-	client.setAPIRoot(server.URL)
-
-	defer server.Close()
+	setup()
+	defer teardown()
 
 	mux.HandleFunc("/v1/token", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
@@ -80,9 +80,7 @@ func TestAccessTokenIsSaved(t *testing.T) {
 		fmt.Fprintln(w, `{"access_token":"1234567890abcdefg","expires_in":36000,"scope": "api_access", "token_type": "Bearer"}`)
 	})
 
-	err := client.requestAccessToken()
-
-	if err != nil {
+	if err := client.requestAccessToken(); err != nil {
 		t.Errorf("requestAccessToken() should not return err with a valid response")
 	}
 
