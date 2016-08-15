@@ -64,6 +64,34 @@ type TagResult struct {
 	DocIDString string `json:"docid_str"`
 }
 
+// ColorRequest represents the JSON request to /color/
+type ColorRequest struct {
+	URLs     []string `json:"url"`
+	LocalIDs []string `json:"local_ids,omitempty"`
+}
+
+// ColorResp is the expected response from the /color/ endpoint
+type ColorResp struct {
+	StatusCode    string `json:"status_code"`
+	StatusMessage string `json:"status_msg"`
+	Results       []struct {
+		DocID       *big.Int `json:"docid"`
+		URL         string   `json:"url"`
+		DocIDString string   `json:"docid_str"`
+		Colors      []Color  `json:"colors"`
+	} `json:"results"`
+}
+
+// Color represents a single color in a given image
+type Color struct {
+	W3C struct {
+		Hex  string `json:"hex"`
+		Name string `json:"name"`
+	}
+	Hex     string  `json:"hex"`
+	Density float64 `json:"density"`
+}
+
 // FeedbackForm is used to send feedback back to Clarifai
 type FeedbackForm struct {
 	DocIDs           []string `json:"docids,omitempty"`
@@ -111,6 +139,24 @@ func (client *Client) Tag(req TagRequest) (*TagResp, error) {
 	err = json.Unmarshal(res, tagres)
 
 	return tagres, err
+}
+
+// Color makes a request for a series of images to be color tagged
+func (client *Client) Color(req ColorRequest) (*ColorResp, error) {
+	if len(req.URLs) < 1 {
+		return nil, errors.New("Requires at least one url")
+	}
+
+	res, err := client.commonHTTPRequest(req, "color", "POST", false)
+
+	if err != nil {
+		return nil, err
+	}
+
+	colorResponse := new(ColorResp)
+	err = json.Unmarshal(res, colorResponse)
+
+	return colorResponse, err
 }
 
 // Feedback allows the user to provide contextual feedback to Clarifai in order to improve their results
