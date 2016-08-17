@@ -123,6 +123,11 @@ func (client *Client) Info() (*InfoResp, error) {
 }
 
 // Tag allows the client to request tag data on a single, or multiple photos
+func (client *Client) Tag(req TagRequest) (*ImageTagResp, error) {
+	return client.ImageTag(req)
+}
+
+// ImageTag allows the client to request tag data on a single, or multiple photos
 func (client *Client) ImageTag(req TagRequest) (*ImageTagResp, error) {
 	if len(req.URLs) < 1 {
 		return nil, errors.New("Requires at least one url")
@@ -140,7 +145,7 @@ func (client *Client) ImageTag(req TagRequest) (*ImageTagResp, error) {
 	return tagres, err
 }
 
-// Tag allows the client to request tag data on a single, or multiple photos
+// VideoTag allows the client to request tag data on a single, or multiple videos
 func (client *Client) VideoTag(req TagRequest) (*VideoTagResp, error) {
 	if len(req.URLs) < 1 {
 		return nil, errors.New("Requires at least one url")
