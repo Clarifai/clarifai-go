@@ -29,6 +29,7 @@ type InfoResp struct {
 // TagRequest represents a JSON request for /tag/
 type TagRequest struct {
 	URLs     []string `json:"url"`
+	Files    []string `json:"files,omitempty"`
 	LocalIDs []string `json:"local_ids,omitempty"`
 	Model    string   `json:"model,omitempty"`
 }
@@ -97,11 +98,23 @@ func (client *Client) Info() (*InfoResp, error) {
 
 // Tag allows the client to request tag data on a single, or multiple photos
 func (client *Client) Tag(req TagRequest) (*TagResp, error) {
-	if len(req.URLs) < 1 {
-		return nil, errors.New("Requires at least one url")
+	if len(req.URLs) < 1 && len(req.Files) < 1 {
+		return nil, errors.New("Requires at least one file or url")
 	}
 
-	res, err := client.commonHTTPRequest(req, "tag", "POST", false)
+	// API doesn't support file and URLs simultaniously.
+	if len(req.Files) > 0 && len(req.URLs) > 0 {
+		return nil, errors.New("Can't submit both files and urls")
+	}
+
+	res := []byte{}
+	var err error
+
+	if len(req.Files) > 0 {
+		res, err = client.fileHTTPRequest(req, "tag", false)
+	} else {
+		res, err = client.commonHTTPRequest(req, "tag", "POST", false)
+	}
 
 	if err != nil {
 		return nil, err

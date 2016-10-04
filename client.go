@@ -5,9 +5,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"io"
 	"io/ioutil"
+	"mime/multipart"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -126,6 +129,81 @@ func (client *Client) commonHTTPRequest(jsonBody interface{}, endpoint, verb str
 				return nil, err
 			}
 			return client.commonHTTPRequest(jsonBody, endpoint, verb, true)
+		}
+		return nil, errors.New("TOKEN_INVALID")
+	case 429:
+		client.setThrottle(true)
+		return nil, errors.New("THROTTLED")
+	case 400:
+		return nil, errors.New("ALL_ERROR")
+	case 500:
+		return nil, errors.New("CLARIFAI_ERROR")
+	default:
+		return nil, errors.New("UNEXPECTED_STATUS_CODE")
+	}
+}
+
+func (client *Client) fileHTTPRequest(jsonBody TagRequest, endpoint string, retry bool) ([]byte, error) {
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+
+	for idx, file := range jsonBody.Files {
+		// don't share file name information
+		fileWriter, err := writer.CreateFormFile("encoded_data", strconv.Itoa(idx))
+		if err != nil {
+			return nil, err
+		}
+
+		fp, err := os.Open(file)
+		if err != nil {
+			return nil, err
+		}
+		defer fp.Close()
+
+		_, err = io.Copy(fileWriter, fp)
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	err := writer.WriteField("op", endpoint)
+
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", client.buildURL(endpoint), body)
+
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Authorization", "Bearer "+client.AccessToken)
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+
+	httpClient := &http.Client{}
+	res, err := httpClient.Do(req)
+
+	if err != nil {
+		return nil, err
+	}
+
+	switch res.StatusCode {
+	case 200, 201:
+		if client.Throttled {
+			client.setThrottle(false)
+		}
+		defer res.Body.Close()
+		body, err := ioutil.ReadAll(res.Body)
+		return body, err
+	case 401:
+		if !retry {
+			err := client.requestAccessToken()
+			if err != nil {
+				return nil, err
+			}
+			return client.fileHTTPRequest(jsonBody, endpoint, true)
 		}
 		return nil, errors.New("TOKEN_INVALID")
 	case 429:
