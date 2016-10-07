@@ -2,6 +2,7 @@ package clarifai
 
 import (
 	"fmt"
+	"math/big"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -59,6 +60,70 @@ func TestTagMultiple(t *testing.T) {
 
 	if err != nil {
 		t.Errorf("Tag() should not return error with valid request: %q\n", err)
+	}
+}
+
+func TestColorMultiple(t *testing.T) {
+	mux := http.NewServeMux()
+	server := httptest.NewServer(mux)
+	client := NewClient(ClientID, ClientSecret)
+	client.setAPIRoot(server.URL)
+
+	defer server.Close()
+
+	mux.HandleFunc("/v1/token", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprintln(w, `{"access_token":"1234567890abcdefg","expires_in":36000,"scope": "api_access", "token_type": "Bearer"}`)
+	})
+
+	mux.HandleFunc("/v1/color", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprintln(w, `{"status_code":"OK","status_msg":"All images in request have completed successfully. ","results":[{"docid":15512461224882631443,"url":"https://samples.clarifai.com/metro-north.jpg","docid_str":"31fdb2316ff87fb5d747554ba5267313","colors":[{"w3c":{"hex":"#696969","name":"DimGray"},"hex":"#513f2c","density":0.14725},{"w3c":{"hex":"#6495ed","name":"CornflowerBlue"},"hex":"#7298e2","density":0.31575}]},{"docid":15512461224882631444,"url":"https://samples.clarifai.com/metro-south.jpg","docid_str":"31fdb2316ff87fb5d747554ba5267314","colors":[{"w3c":{"hex":"#696970","name":"DimGray"},"hex":"#513f2d","density":0.14725},{"w3c":{"hex":"#6495ee","name":"CornflowerBlue"},"hex":"#7298e3","density":0.31575}]}]}`)
+	})
+
+	urls := []string{"http://www.clarifai.com/img/metro-north.jpg", "http://www.clarifai.com/img/metro-south.jpg"}
+	resp, err := client.Color(ColorRequest{URLs: urls})
+
+	for _, r := range resp.Results {
+		if r.DocID == big.NewInt(0) {
+			t.Error("Color() DocID should be populated")
+		}
+
+		if r.DocIDString == "" {
+			t.Error("Color() DocIDString should be populated")
+		}
+
+		if r.URL == "" {
+			t.Error("Color() URL should be populated")
+		}
+
+		if len(r.Colors) == 0 {
+			t.Error("Color() Colors should be populated")
+		}
+
+		for _, c := range r.Colors {
+			if c.Density == 0 {
+				t.Error("Color() Color Density should be populated")
+			}
+
+			if c.Hex == "" {
+				t.Error("Color() Color Hex should be populated")
+			}
+
+			if c.W3C.Hex == "" {
+				t.Error("Color() W3C Hex should be populated")
+			}
+
+			if c.W3C.Name == "" {
+				t.Error("Color() W3C Name should be populated")
+			}
+		}
+	}
+
+	if err != nil {
+		t.Errorf("Color() should not return error with valid request: %q\n", err)
 	}
 }
 

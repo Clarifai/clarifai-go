@@ -121,6 +121,7 @@ func (client *Client) commonHTTPRequest(jsonBody interface{}, endpoint, verb str
 		}
 		defer res.Body.Close()
 		body, err := ioutil.ReadAll(res.Body)
+
 		return body, err
 	case 401:
 		if !retry {
@@ -143,11 +144,11 @@ func (client *Client) commonHTTPRequest(jsonBody interface{}, endpoint, verb str
 	}
 }
 
-func (client *Client) fileHTTPRequest(jsonBody TagRequest, endpoint string, retry bool) ([]byte, error) {
+func (client *Client) fileHTTPRequest(jsonBody hasFiles, endpoint string, retry bool) ([]byte, error) {
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 
-	for idx, file := range jsonBody.Files {
+	for idx, file := range jsonBody.GetFiles() {
 		// don't share file name information
 		fileWriter, err := writer.CreateFormFile("encoded_data", strconv.Itoa(idx))
 		if err != nil {

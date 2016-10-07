@@ -26,12 +26,54 @@ type InfoResp struct {
 	}
 }
 
+// ColorRequest represents a JSON request for /color/
+type ColorRequest struct {
+	URLs  []string `json:"url"`
+	Files []string `json:"files,omitempty"`
+}
+
+func (c ColorRequest) GetFiles() []string {
+	return c.Files
+}
+
+// ColorResp represents the expected JSON response from /color/
+type ColorResp struct {
+	StatusCode    string `json:"status_code"`
+	StatusMessage string `json:"status_msg"`
+	Results       []*ColorResult
+}
+
+// ColorResult represents the expected data for a single color result
+type ColorResult struct {
+	DocID       *big.Int `json:"docid"`
+	URL         string   `json:"url"`
+	Colors      []*Color `json:"colors"`
+	DocIDString string   `json:"docid_str"`
+}
+
+// Color represents a color.
+type Color struct {
+	Hex     string  `json:"hex"`
+	Density float64 `json:"density"`
+	W3C     W3C     `json:"w3c"`
+}
+
+// W3C is to reprsent the W3C color.
+type W3C struct {
+	Hex  string `json:"hex"`
+	Name string `json:"name"`
+}
+
 // TagRequest represents a JSON request for /tag/
 type TagRequest struct {
 	URLs     []string `json:"url"`
 	Files    []string `json:"files,omitempty"`
 	LocalIDs []string `json:"local_ids,omitempty"`
 	Model    string   `json:"model,omitempty"`
+}
+
+func (t TagRequest) GetFiles() []string {
+	return t.Files
 }
 
 // TagResp represents the expected JSON response from /tag/
@@ -82,6 +124,10 @@ type FeedbackResp struct {
 	StatusMessage string `json:"status_msg"`
 }
 
+type hasFiles interface {
+	GetFiles() []string
+}
+
 // Info will return the current status info for the given client
 func (client *Client) Info() (*InfoResp, error) {
 	res, err := client.commonHTTPRequest(nil, "info", "GET", false)
@@ -124,6 +170,36 @@ func (client *Client) Tag(req TagRequest) (*TagResp, error) {
 	err = json.Unmarshal(res, tagres)
 
 	return tagres, err
+}
+
+// Color allows the client to request color data on a single, or multiple photos
+func (client *Client) Color(req ColorRequest) (*ColorResp, error) {
+	if len(req.URLs) < 1 && len(req.Files) < 1 {
+		return nil, errors.New("Requires at least one file or url")
+	}
+
+	// API doesn't support file and URLs simultaniously.
+	if len(req.Files) > 0 && len(req.URLs) > 0 {
+		return nil, errors.New("Can't submit both files and urls")
+	}
+
+	res := []byte{}
+	var err error
+
+	if len(req.Files) > 0 {
+		res, err = client.fileHTTPRequest(req, "color", false)
+	} else {
+		res, err = client.commonHTTPRequest(req, "color", "POST", false)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	colorRes := new(ColorResp)
+	err = json.Unmarshal(res, colorRes)
+
+	return colorRes, err
 }
 
 // Feedback allows the user to provide contextual feedback to Clarifai in order to improve their results
