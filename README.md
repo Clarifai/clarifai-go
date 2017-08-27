@@ -1,8 +1,12 @@
 # Clarifai Golang Library
 
-Library for our [API](https://developer.clarifai.com/docs/).
+Library for our v1 [API](https://clarifai.com/developer/guide-v1/).
 
 [![GoDoc](https://godoc.org/github.com/Clarifai/clarifai-go?status.svg)](https://godoc.org/github.com/Clarifai/clarifai-go)
+
+## Disclaimer
+
+This API client only supports Clarifai v1 API. Stay tuned for the v2 support.
 
 ## Usage
 `go get github.com/clarifai/clarifai-go`
