@@ -31,7 +31,7 @@ func main() {
 		fmt.Printf("%+v\n", info)
 	}
 	// Let's get some context about these images
-	urls := []string{"http://www.clarifai.com/img/metro-north.jpg", "http://www.clarifai.com/img/metro-north.jpg"}
+	urls := []string{"https://samples.clarifai.com/metro-north.jpg", "https://samples.clarifai.com/puppy.jpeg"}
 	// Give it to Clarifai to run their magic
 	tag_data, err := client.Tag(clarifai.TagRequest{URLs: urls})
 
