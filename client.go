@@ -5,11 +5,19 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"io/ioutil"
+	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+)
+
+var (
+	errUnexpectedStatusCode = errors.New("UNEXPECTED_STATUS_CODE")
+	errClarifai             = errors.New("CLARIFAI_ERROR")
+	errBadRequest           = errors.New("BAD_REQUEST")
+	errThrottled            = errors.New("THROTTLED")
+	errTokenInvalid         = errors.New("TOKEN_INVALID")
 )
 
 // Configurations
@@ -18,7 +26,7 @@ const (
 	rootURL = "https://api.clarifai.com"
 )
 
-// Client contains scoped variables forindividual clients
+// Client contains scoped variables for individual clients
 type Client struct {
 	ClientID     string
 	ClientSecret string
@@ -48,7 +56,6 @@ func (client *Client) requestAccessToken() error {
 	formData := strings.NewReader(form.Encode())
 
 	req, err := http.NewRequest("POST", client.buildURL("token"), formData)
-
 	if err != nil {
 		return err
 	}
@@ -59,84 +66,72 @@ func (client *Client) requestAccessToken() error {
 
 	httpClient := &http.Client{}
 	res, err := httpClient.Do(req)
-
 	if err != nil {
 		return err
 	}
-
-	defer res.Body.Close()
-
-	body, err := ioutil.ReadAll(res.Body)
-
-	if err != nil {
-		return err
-	}
-
 	token := new(TokenResp)
-	err = json.Unmarshal(body, token)
-
-	if err != nil {
+	if err := json.NewDecoder(res.Body).Decode(token); err != nil {
 		return err
 	}
-
 	client.setAccessToken(token.AccessToken)
 	return nil
 }
 
-func (client *Client) commonHTTPRequest(jsonBody interface{}, endpoint, verb string, retry bool) ([]byte, error) {
-	if jsonBody == nil {
-		jsonBody = struct{}{}
+func createRequestBody(body interface{}) ([]byte, error) {
+	if body == nil {
+		return nil, nil
 	}
+	return json.Marshal(body)
+}
 
-	body, err := json.Marshal(jsonBody)
-
+func (client *Client) commonHTTPRequest(jsonBody interface{}, endpoint, verb string, retry bool, decodeInto interface{}) error {
+	body, err := createRequestBody(jsonBody)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	req, err := http.NewRequest(verb, client.buildURL(endpoint), bytes.NewReader(body))
-
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	req.Header.Set("Content-Length", strconv.Itoa(len(body)))
-	req.Header.Set("Authorization", "Bearer "+client.AccessToken)
+	req.Header.Set("Content-Length", fmt.Sprintf("%d", len(body)))
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", client.AccessToken))
 	req.Header.Set("Content-Type", "application/json")
 
-	httpClient := &http.Client{}
-	res, err := httpClient.Do(req)
-
+	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	switch res.StatusCode {
-	case 200, 201:
+	case http.StatusOK, http.StatusCreated:
 		if client.Throttled {
 			client.setThrottle(false)
 		}
-		defer res.Body.Close()
-		body, err := ioutil.ReadAll(res.Body)
-		return body, err
-	case 401:
-		if !retry {
-			err := client.requestAccessToken()
-			if err != nil {
-				return nil, err
+		if decodeInto != nil {
+			if err := json.NewDecoder(res.Body).Decode(decodeInto); err != nil {
+				return err
 			}
-			return client.commonHTTPRequest(jsonBody, endpoint, verb, true)
 		}
-		return nil, errors.New("TOKEN_INVALID")
-	case 429:
+		return nil
+	case http.StatusUnauthorized:
+		if !retry {
+			if err := client.requestAccessToken(); err != nil {
+				return err
+			}
+			return client.commonHTTPRequest(jsonBody, endpoint, verb, true, decodeInto)
+		}
+		return errTokenInvalid
+	case http.StatusTooManyRequests:
 		client.setThrottle(true)
-		return nil, errors.New("THROTTLED")
-	case 400:
-		return nil, errors.New("ALL_ERROR")
-	case 500:
-		return nil, errors.New("CLARIFAI_ERROR")
+		return errThrottled
+	case http.StatusBadRequest:
+		return errBadRequest
+	case http.StatusInternalServerError:
+		return errClarifai
 	default:
-		return nil, errors.New("UNEXPECTED_STATUS_CODE")
+		return errUnexpectedStatusCode
 	}
 }
 
