@@ -1,3 +1,5 @@
+![image](https://github.com/user-attachments/assets/eed8dfe5-bfb6-4dfc-86b4-51e1f9a887f4)
+
 # Clarifai Golang Library
 
 Library for our v1 [API](https://clarifai.com/developer/guide-v1/).
